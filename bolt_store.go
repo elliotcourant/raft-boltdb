@@ -246,6 +246,22 @@ func (b *BoltStore) Get(k []byte) ([]byte, error) {
 	return append([]byte(nil), val...), nil
 }
 
+// Delete is used to remove a value from the k/v store by key
+func (b *BoltStore) Delete(k []byte) error {
+	tx, err := b.conn.Begin(true)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	bucket := tx.Bucket(dbConf)
+	if err := bucket.Delete(k); err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
 // SetUint64 is like Set, but handles uint64 values
 func (b *BoltStore) SetUint64(key []byte, val uint64) error {
 	return b.Set(key, uint64ToBytes(val))
